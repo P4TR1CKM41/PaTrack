@@ -5,11 +5,11 @@ close all
 % import org.opensim.modeling.*
 % myMatlabLog = JavaLogSink()
 % Logger.addSink(myMatlabLog)
-
+tic
 pathtopfolder = cd; %% location of the app
 setup_Folder = 'OSLO'; %changed 'MARKERLESS_25B'
 RRA =1;
-SO =1;
+SO =0;
 PROBE =1;
 [DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, RRA, SO, PROBE);
 DATA.OPTIONS.RRA = RRA;% 0 or 1
@@ -114,7 +114,7 @@ for c = startcon: endcon
         static_c3d_path = [fileListc3d(find(~cellfun(@isempty,strfind({fileListc3d.name},DATA.OPTIONS.Ref_Identifier)))).folder, '/',fileListc3d(find(~cellfun(@isempty,strfind({fileListc3d.name},DATA.OPTIONS.Ref_Identifier)))).name];
         %% get bodymass from c3d static trial
         if DATA.OPTIONS.CORRECT_BODYMASS_FROM_FP ==1
-        [DATA.OPTIONS.ANTRO.mass] = get_bodymaxx_from_c3d(static_c3d_path)
+            [DATA.OPTIONS.ANTRO.mass] = get_bodymaxx_from_c3d(static_c3d_path)
         end
         %% convert trc
         disp(static_c3d_path)
@@ -212,7 +212,7 @@ for c = startcon: endcon
                 [~,~,DATA.SO_TABLE.PROBE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_probe.(trialname));
 
             elseif DATA.OPTIONS.SO ==1 && DATA.OPTIONS.HAS_PROBE==0
-                 [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname)] = SO_app(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
+                [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname)] = SO_app(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
                 [~,~,DATA.SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.SO_activation.(trialname));
                 [~,~,DATA.SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_force.(trialname));
             end
@@ -232,18 +232,18 @@ for c = startcon: endcon
             end
             ARRAY = DATA.BK_VEL_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)
-                PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKVEL_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
+                DATA.PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKVEL_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
             end
             ARRAY = DATA.BK_POS_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)
-                PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKPOS_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
+                DATA.PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKPOS_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
             end
             ARRAY = DATA.GRF_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)
                 DATA.PARAMETERS.(DATA.OPTIONS.LEG).(['IC_GRF_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_ANALOG.(trialname)(1),ARRAY.Properties.VariableNames{op}));
             end
             clearvars ARRAY
-            %% 
+            %%
             DATA.NORMAL.HEADER{1,dy} = trialname;
             try
                 % % % %     %% only works for one specific model
@@ -268,26 +268,32 @@ for c = startcon: endcon
             save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], '-struct', 'DATA');
             % % % % % % if OPTIONS.MARKERLESS==0 && RRA ==0
             % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'MOMENT_TABLE','ANGLES_TABLE', 'GRF_TABLE',  'MARKERS', 'OPTIONS', 'CONTACT_KINEMATIC', 'CONTACT_ANALOG', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
-            % % % % % % 
+            % % % % % %
             % % % % % % elseif OPTIONS.MARKERLESS==0 && RRA ==1
             % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'MOMENT_TABLE','ANGLES_TABLE', 'GRF_TABLE',  'MARKERS', 'OPTIONS', 'CONTACT_KINEMATIC', 'CONTACT_ANALOG', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE', 'RRA_TABLE', 'SO_TABLE')
-            % % % % % % 
+            % % % % % %
             % % % % % % elseif OPTIONS.MARKERLESS==1
             % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'ANGLES_TABLE', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
             % % % % % % end
         end
-        % clear all varibles from the subject TODO
+        % clear all varibles from the subject 
         clearvars anthro_file fileListc3d static_c3d_path temp_c3d trialname trials
+        % CleanUp DATA structure Get all the field names
+        fields = fieldnames(DATA);
+        % Remove the field you want to keep from the list
+        fields = setdiff(fields, 'OPTIONS');
+        % Remove all other fields
+        DATA = rmfield(DATA, fields);
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'PATHS');
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'ANTRO');
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'STATIC_PATH');
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'STATIC_ANGLES');
-        % DATA.OPTIONS.PATH   = rmfield (DATA.OPTIONS.PATH  , 'SCALED_MODEL');
-        % DATA.OPTIONS.PATH   = rmfield (DATA.OPTIONS.PATH  , 'SCALED_MODEL_AFTER_RRA_WITH_PROBE');
-        % DATA = rmfield (DATA.CONTACT_ANALOG);
+
     end
 
 end
+toc
+display('Finished')
 % % % % % warning ("off")
 % % % % % delete([pathtopfolder, '/', OPTIONS.PATH.GENERIC_MODEL])
 % % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.markersetname])
@@ -295,7 +301,7 @@ end
 % % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.setupIKname])
 % % % % % delete( [pathtopfolder, '/', OPTIONS.GENERIC.setupIDname])
 % % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.setupBKname])
-% % % % % 
+% % % % %
 % % % % % try
 % % % % %     delete([pathtopfolder, '/ExternalForce_Setup_FP1_Left.xml'])
 % % % % %     delete([pathtopfolder, '/ExternalForce_Setup_FP2_Left.xml'])
@@ -305,10 +311,10 @@ end
 % % % % % end
 % % % % % toc
 % % % % % disp('Finished')
-% % % % % 
+% % % % %
 % % % % % %% MERGE
 % % % % % clc
-% % % % % 
+% % % % %
 % % % % % % OPTIONS.top_folder = 'C:\Users\adpatrick\Downloads\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
 % % % % % %
 % % % % % % [MERGED] = on_merge_data_main(OPTIONS.top_folder);
@@ -319,12 +325,12 @@ end
 % % % % % % LineList = plot (MERGED.TIMECURVES.KAM', 'Color', [[0, 0, 0], 0.1],'LineWidth',0.2, 'LineStyle','-');
 % % % % % % set(LineList, 'ButtonDownFcn', {@myLineCallback, LineList,MERGED.INFO.NAME_Long });
 % % % % % % stan_plot_100ms
-% % % % % 
+% % % % %
 % % % % % % figure(2)
 % % % % % % plot(MERGED.TIMECURVES.KAM_LAT', 'color', 'red')
 % % % % % % hold on
 % % % % % % plot(MERGED.TIMECURVES.KAM_MED', 'color','green')
-% % % % % 
+% % % % %
 % % % % % %
 % % % % % % hoch = 1;
 % % % % % % S = dir(fullfile([conditions(c).folder,'/',conditions(c).name],'*.mat'));

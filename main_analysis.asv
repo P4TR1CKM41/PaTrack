@@ -5,11 +5,11 @@ close all
 % import org.opensim.modeling.*
 % myMatlabLog = JavaLogSink()
 % Logger.addSink(myMatlabLog)
-
+tic
 pathtopfolder = cd; %% location of the app
 setup_Folder = 'OSLO'; %changed 'MARKERLESS_25B'
 RRA =1;
-SO =1;
+SO =0;
 PROBE =1;
 [DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, RRA, SO, PROBE);
 DATA.OPTIONS.RRA = RRA;% 0 or 1
@@ -232,11 +232,11 @@ for c = startcon: endcon
             end
             ARRAY = DATA.BK_VEL_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)
-                PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKVEL_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
+                DATA.PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKVEL_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
             end
             ARRAY = DATA.BK_POS_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)
-                PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKPOS_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
+                DATA.PARAMETERS.(DATA.OPTIONS.LEG).(['IC_BKPOS_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_KINEMATIC.(trialname)(1),ARRAY.Properties.VariableNames{op}));
             end
             ARRAY = DATA.GRF_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)
@@ -276,18 +276,27 @@ for c = startcon: endcon
             % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'ANGLES_TABLE', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
             % % % % % % end
         end
-        % clear all varibles from the subject
+        % clear all varibles from the subject TODO
         clearvars anthro_file fileListc3d static_c3d_path temp_c3d trialname trials
+        % Get all the field names
+        fields = fieldnames(DATA);
+        % Remove the field you want to keep from the list
+        fields = setdiff(fields, 'OPTIONS');
+        % Remove all other fields
+        DATA = rmfield(DATA, fields);
+
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'PATHS');
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'ANTRO');
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'STATIC_PATH');
         DATA.OPTIONS = rmfield (DATA.OPTIONS, 'STATIC_ANGLES');
-        DATA.OPTIONS.PATH   = rmfield (DATA.OPTIONS.PATH  , 'SCALED_MODEL');
-        DATA.OPTIONS.PATH   = rmfield (DATA.OPTIONS.PATH  , 'SCALED_MODEL_AFTER_RRA_WITH_PROBE');
-        DATA = rmfield (DATA.CONTACT_ANALOG);
+        % DATA.OPTIONS.PATH   = rmfield (DATA.OPTIONS.PATH  , 'SCALED_MODEL');
+        % DATA.OPTIONS.PATH   = rmfield (DATA.OPTIONS.PATH  , 'SCALED_MODEL_AFTER_RRA_WITH_PROBE');
+        % DATA = rmfield (DATA.CONTACT_ANALOG);
     end
 
 end
+toc
+display('Finished')
 % % % % % warning ("off")
 % % % % % delete([pathtopfolder, '/', OPTIONS.PATH.GENERIC_MODEL])
 % % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.markersetname])
