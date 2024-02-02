@@ -64,7 +64,7 @@ try
 end
 % Save the new model to a file with the suffix "_probed".
 
-model_path_with_probe = [current_folder, '/', 'ajusted_',trialname, '_probe.osim']
+model_path_with_probe = [current_folder, '/', 'ajusted_',trialname, '_probe.osim'];
 model.print(model_path_with_probe);
 
 % Add the new model to the GUI.
