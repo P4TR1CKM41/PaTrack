@@ -1,0 +1,69 @@
+% function [OUT] = TREATMILL_force_split_mot(path,convert_type,OPTIONS)
+
+path = 'C:\Users\adpatrick\Downloads\HSO_TRUNK\Trunk_Lean_15_hinten\ID01/Trunk_Lean_15_hinten 1.c3d'
+OPTIONS.MOTION = 'Treadmill';
+OPTIONS.Ref_Identifier = 'Static';
+OPTIONS.FP_used = 1; 
+OPTIONS.cutting_c3d =0;
+OPTIONS.FP_Stance_Threshold = 30;
+OPTIONS.convert_type = 1; % 0 war motack gleich
+OPTIONS.SETTINGS = "OSLO";
+OPTIONS.remove_unwanted_markers = 0;
+%OPTIONS.SETTINGS = "CALGARY";
+% OPTIONS.SETTINGS = "JOHNATAN";
+[~, ~, OPTIONS.MARKER_SETUP.HIP] = xlsread('Marker_for_segments_v3.xlsx','HIP');
+[~, ~, OPTIONS.MARKER_SETUP.KNEE] = xlsread('Marker_for_segments_v3.xlsx','KNEE');
+[~, ~, OPTIONS.MARKER_SETUP.ANKLE] = xlsread('Marker_for_segments_v3.xlsx','ANKLE');
+[~, ~, OPTIONS.MARKER_SETUP.FOOT] = xlsread('Marker_for_segments_v3.xlsx','FOOT');
+[~, ~, OPTIONS.MARKER_SETUP.MTP] = xlsread('Marker_for_segments_v3.xlsx','MTP');
+
+pathmot = 'C:\Users\adpatrick\Downloads\HSO_TRUNK\Trunk_Lean_15_hinten\ID01/Trunk_Lean_15_hinten 1.mot'
+pathc3d = 'C:\Users\adpatrick\Downloads\HSO_TRUNK\Trunk_Lean_15_hinten\ID01/Trunk_Lean_15_hinten 1.c3d'
+[out] = ReadMotFile(pathmot);
+
+c3d = osimC3D(path,OPTIONS.convert_type);
+markers = c3d.getTable_markers();
+vecm = osimTableToStruct(markers); 
+% idx = find(contains(names,['f',num2str(OPTIONS.FP_used)]) ==1);
+markersnames = fieldnames(vecm);
+row_num = find(contains((OPTIONS.MARKER_SETUP.HIP(:,1)),OPTIONS.SETTINGS)==1);
+anklemarkername_right = OPTIONS.MARKER_SETUP.ANKLE{row_num, 2}; 
+anklemarkername_left = OPTIONS.MARKER_SETUP.ANKLE{row_num, 4}; 
+m_right = (vecm.(markersnames{find(contains (markersnames, anklemarkername_right)),1})(:,end));
+m_long_right = interp(m_right,length(out.data(:,3))/length(m_right));
+
+%% I assume that the first strike is gone be a right foot strike!
+threshold = 50;
+v = (out.data(:,3)>50);
+streaks = [];
+streak_indices = {};
+current_streak = 0;
+start_index = 0;
+for i = 1:length(v)
+    if v(i) == 1
+        if current_streak == 0 
+           start_index = i; 
+        end
+        current_streak = current_streak + 1; 
+    elseif current_streak > 0  
+        streaks(end+1) = current_streak;
+        streak_indices{end+1}= start_index:(i-1);
+        current_streak = 0;
+    end
+end
+if current_streak > 0
+    streaks(end+1) = current_streak;
+    streak_indices{end+1}= start_index:(i-1);
+end
+odd_streak_indices = [];
+for i = 1:2:numel(streak_indices)
+    odd_streak_indices = [odd_streak_indices streak_indices{i}];
+end
+GRF1= out.data; 
+GRF1(odd_streak_indices',2:10)= 0;
+GRF2= out.data; 
+GRF2(even_streak_indices',2:10)= 0;
+writeMot(GRF1(:,2:end),GRF1(:,1),'C:\Users\adpatrick\Downloads\HSO_TRUNK\Trunk_Lean_15_hinten\ID01/Trunk_Lean_15_hinten 1_seiteL.mot')
+writeMot(GRF1(:,2:end),GRF1(:,1),'C:\Users\adpatrick\Downloads\HSO_TRUNK\Trunk_Lean_15_hinten\ID01/Trunk_Lean_15_hinten 1_seiteR.mot')
+
+% end

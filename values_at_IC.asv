@@ -1,0 +1,11 @@
+function [OUT] = values_at_IC(ARRAY, IC)
+
+
+for i = 1 : length(ARRAY.Properties.VariableNames)
+
+
+table2array(ARRAY(IC,ARRAY.Properties.VariableNames{i}))
+PARAMETER.(['IC_',ARRAY.Properties.VariableNames{i} ])
+end
+a =2;
+end
