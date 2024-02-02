@@ -9,7 +9,7 @@ import org.opensim.modeling.*
 analyeTool = AnalyzeTool([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup]);
 analyeTool.setModelFilename(OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE);
 model = Model(OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE); % location of the scaled model
-model.initSystem();
+state = model.initSystem();
 analyeTool.setName(trialname);
 analyeTool.setResultsDir(tempfolder)
 analyeTool.setInitialTime(initial_time);
@@ -20,7 +20,11 @@ analyeTool.setCoordinatesFileName([tempfolder, '\', OPTIONS.PATHS.Kinematics_q.(
 %analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
 % analyeTool.setModel(model)
 analyeTool.print([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
-analyeTool.run();
+%analyeTool.run();
+tool = AnalyzeTool([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
+tool.setModel(model);
+
+tool.run();
 toc
 
 activations = [trialname, '_StaticOptimization_activation.sto'];
