@@ -20,7 +20,7 @@ twitchRatios = data{2};
 % These settings are used for all probes.
 activationMaintenanceRateOn = true;
 shorteningRateOn = true;
-basalRateOn = false;
+basalRateOn = true;
 mechanicalWorkRateOn = true;
 reportTotalMetabolicsOnly = false;
 
@@ -69,7 +69,7 @@ end
 end
 % Save the new model to a file with the suffix "_probed".
 
-newPathName = 'C:\Users\adpatrick\OneDrive - nih.no\Desktop\HSO_TRUNK_EXTENDED\Trunk_Lean_15_hinten\ID01\ajusted_Trunk_Lean_15_hinten1_probe.osim'
+newPathName = 'C:\Users\adpatrick\OneDrive - nih.no\Desktop\HSO_TRUNK_EXTENDED\Trunk_Lean_15_hinten\ID01\ajusted_Trunk_Lean_15_hinten1_probeMATLAB.osim'
 model.print(newPathName);
 
 % Add the new model to the GUI.
