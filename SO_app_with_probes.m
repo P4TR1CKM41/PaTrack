@@ -8,6 +8,8 @@ import org.opensim.modeling.*
 %% load the generic setup file
 analyeTool = AnalyzeTool([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup]);
 analyeTool.setModelFilename(OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE);
+model = Model(OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE); % location of the scaled model
+model.initSystem();
 analyeTool.setName(trialname);
 analyeTool.setResultsDir(tempfolder)
 analyeTool.setInitialTime(initial_time);
@@ -15,10 +17,9 @@ analyeTool.setFinalTime(final_time);
 copyfile([pathtopfolder, '\',OPTIONS.GENERIC.rra_actuator],[tempfolder, '\', OPTIONS.GENERIC.rra_actuator]);
 analyeTool.setExternalLoadsFileName([OPTIONS.PATHS.Exload.(trialname)]);
 analyeTool.setCoordinatesFileName([tempfolder, '\', OPTIONS.PATHS.Kinematics_q.(trialname)]);
-%analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
+analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
+% analyeTool.setModel(model)
 analyeTool.print([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
-model = Model([pathtopfolder, '\', OPTIONS.GENERIC.so_setup]); % location of the scaled model
-model.initSystem();
 analyeTool.run();
 toc
 

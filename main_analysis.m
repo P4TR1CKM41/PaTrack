@@ -9,7 +9,7 @@ tic
 pathtopfolder = cd; %% location of the app
 setup_Folder = 'OSLO'; %changed 'MARKERLESS_25B'
 RRA =1;
-SO =0;
+SO =1;
 PROBE =1;
 [DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, RRA, SO, PROBE);
 DATA.OPTIONS.RRA = RRA;% 0 or 1
@@ -114,7 +114,7 @@ for c = startcon: endcon
         static_c3d_path = [fileListc3d(find(~cellfun(@isempty,strfind({fileListc3d.name},DATA.OPTIONS.Ref_Identifier)))).folder, '/',fileListc3d(find(~cellfun(@isempty,strfind({fileListc3d.name},DATA.OPTIONS.Ref_Identifier)))).name];
         %% get bodymass from c3d static trial
         if DATA.OPTIONS.CORRECT_BODYMASS_FROM_FP ==1
-            [DATA.OPTIONS.ANTRO.mass] = get_bodymaxx_from_c3d(static_c3d_path)
+            [DATA.OPTIONS.ANTRO.mass] = get_bodymaxx_from_c3d(static_c3d_path);
         end
         %% convert trc
         disp(static_c3d_path)
@@ -276,7 +276,7 @@ for c = startcon: endcon
             % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'ANGLES_TABLE', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
             % % % % % % end
         end
-        % clear all varibles from the subject 
+        % clear all varibles from the subject
         clearvars anthro_file fileListc3d static_c3d_path temp_c3d trialname trials
         % CleanUp DATA structure Get all the field names
         fields = fieldnames(DATA);
