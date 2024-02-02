@@ -1,4 +1,4 @@
-function [OPTIONS] = get_set_up_files(Setupfolder, pathtopfolder, RRA, SO)
+function [OPTIONS] = get_set_up_files(Setupfolder, pathtopfolder, RRA, SO, PROBE)
 setup_files = dir(fullfile([pathtopfolder, '\OpenSim Master_Folder\', Setupfolder], '*.xml'));
 generic_osim_model = dir(fullfile([pathtopfolder, '\OpenSim Master_Folder\', Setupfolder], '*.osim'));
 
@@ -35,7 +35,13 @@ OPTIONS.GENERIC.so_setup = 'SO_Setup.xml';
 copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.so_setup ], [pathtopfolder, '/', OPTIONS.GENERIC.so_setup])
 else
 end
+if PROBE ==1
+    OPTIONS.GENERIC.probe_setup = 'meta_prob_setup.xml';
+    copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.probe_setup ], [pathtopfolder, '/', OPTIONS.GENERIC.probe_setup])
 
+else
+
+end
 try
     copyfile([setup_files(1).folder, '/ExternalForce_Setup_FP1_Left.xml'], [pathtopfolder, '/ExternalForce_Setup_FP1_Left.xml'])
     copyfile([setup_files(1).folder, '/ExternalForce_Setup_FP2_Left.xml'], [pathtopfolder, '/ExternalForce_Setup_FP2_Left.xml'])

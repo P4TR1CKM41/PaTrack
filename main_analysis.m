@@ -10,10 +10,11 @@ pathtopfolder = cd; %% location of the app
 setup_Folder = 'OSLO'; %changed 'MARKERLESS_25B'
 RRA =1;
 SO =1;
-[DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, RRA, SO);
+PROBE =1
+[DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, RRA, SO, PROBE);
 DATA.OPTIONS.RRA = RRA;% 0 or 1
 DATA.OPTIONS.SO = SO;% 0 or 1
-DATA.OPTIONS.HAS_PROBE =1; % 0 or 1
+DATA.OPTIONS.HAS_PROBE =PROBE; % 0 or 1
 DATA.OPTIONS.top_folder = "C:\Users\adpatrick\OneDrive - nih.no\Desktop\HSO_TRUNK_EXTENDED";%'C:\Users\adpc\OneDrive - nih.no\Desktop\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
 DATA.OPTIONS.MOTION = 'Overground'; %string 'Treadmill' or 'Overground'
 DATA.OPTIONS.Ref_Identifier = 'Static'; % string
@@ -196,14 +197,19 @@ for c = startcon: endcon
             end
 
             if DATA.OPTIONS.HAS_PROBE ==1
-                [DATA.OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE] = add_probe_to_model([subjects(s).folder,'/',subjects(s).name], trialname)
+                [DATA.OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE] = add_probe_to_model([subjects(s).folder,'/',subjects(s).name], trialname);
             else
             end
-            if DATA.OPTIONS.SO ==1
-                [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname)] = SO_app(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
+            if DATA.OPTIONS.SO ==1 && DATA.OPTIONS.HAS_PROBE==1
+                [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname), DATA.OPTIONS.PATHS.SO_probe.(trialname)] = SO_app_with_probes(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
                 [~,~,DATA.SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.SO_activation.(trialname));
                 [~,~,DATA.SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_force.(trialname));
-            else
+                [~,~,DATA.SO_TABLE.PROBE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_probe.(trialname));
+
+            elseif DATA.OPTIONS.SO ==1 && DATA.OPTIONS.HAS_PROBE==0
+                 [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname)] = SO_app(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
+                [~,~,DATA.SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.SO_activation.(trialname));
+                [~,~,DATA.SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_force.(trialname));
             end
 
 

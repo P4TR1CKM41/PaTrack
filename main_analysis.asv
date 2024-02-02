@@ -8,10 +8,12 @@ close all
 
 pathtopfolder = cd; %% location of the app
 setup_Folder = 'OSLO'; %changed 'MARKERLESS_25B'
-DATA.OPTIONS.RRA = 1;% 0 or 1
-DATA.OPTIONS.SO = 1;% 0 or 1
+RRA =1;
+SO =1;
+[DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, RRA, SO);
+DATA.OPTIONS.RRA = RRA;% 0 or 1
+DATA.OPTIONS.SO = SO;% 0 or 1
 DATA.OPTIONS.HAS_PROBE =1; % 0 or 1
-[DATA.OPTIONS] = get_set_up_files(setup_Folder,pathtopfolder, DATA.OPTIONS.RRA, DATA.OPTIONS.SO);
 DATA.OPTIONS.top_folder = "C:\Users\adpatrick\OneDrive - nih.no\Desktop\HSO_TRUNK_EXTENDED";%'C:\Users\adpc\OneDrive - nih.no\Desktop\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
 DATA.OPTIONS.MOTION = 'Overground'; %string 'Treadmill' or 'Overground'
 DATA.OPTIONS.Ref_Identifier = 'Static'; % string
@@ -174,7 +176,7 @@ for c = startcon: endcon
             [~,~,DATA.BK_POS_TABLE.(trialname)] =  readMOTSTOTRCfiles((DATA.OPTIONS.PATHS.BK_POS.(trialname)(1:find((DATA.OPTIONS.PATHS.BK_POS.(trialname)) == '\', 1, 'last'))),(DATA.OPTIONS.PATHS.BK_POS.(trialname)(find((DATA.OPTIONS.PATHS.BK_POS.(trialname)) == '\', 1, 'last')+1:end)));
             pause(0.000001)
             %%RRA
-            if RRA ==1
+            if DATA.OPTIONS.RRA ==1
                 [DATA.OPTIONS.PATHS.actuation_force.(trialname), DATA.OPTIONS.PATHS.actuation_power.(trialname), DATA.OPTIONS.PATHS.actuation_speed.(trialname), DATA.OPTIONS.PATHS.avgResiduals.(trialname), DATA.OPTIONS.PATHS.controls.(trialname) , DATA.OPTIONS.PATHS.Kinematics_dudt.(trialname), DATA.OPTIONS.PATHS.Kinematics_q.(trialname), DATA.OPTIONS.PATHS.Kinematics_u.(trialname), DATA.OPTIONS.PATHS.pErr.(trialname), DATA.OPTIONS.PATHS.states.(trialname), DATA.OPTIONS.PATHS.ajusted_model.(trialname)]= RRA_app(pathtopfolder,DATA.OPTIONS,trialname, [subjects(s).folder,'\',subjects(s).name] ,initial_time, final_time);
                 [~,~,DATA.RRA_TABLE.actuation_force.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.actuation_force.(trialname));
                 [~,~,DATA.RRA_TABLE.actuation_power.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.actuation_power.(trialname));
@@ -186,22 +188,21 @@ for c = startcon: endcon
                 [~,~,DATA.RRA_TABLE.pErr.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.pErr.(trialname));
                 [~,~,DATA.RRA_TABLE.states.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.states.(trialname));
                 DATA.RRA_TABLE.avgResiduals.(trialname) =readcell([subjects(s).folder,'/',subjects(s).name, '/', DATA.OPTIONS.PATHS.avgResiduals.(trialname)]);
-                [DATA.OPTIONS.PATHS.ID_AFTER_RRA.(trialname), DATA.OPTIONS.PATHS.Exload.(trialname)]=ID_app_afterRRA(DATA.OPTIONS.PATHS.MOT.(trialname),DATA.OPTIONS.PATHS.TRC.(trialname), [subjects(s).folder,'\',subjects(s).name], [subjects(s).folder,'/',subjects(s).name, '/',DATA.OPTIONS.PATHS.Kinematics_q.(trialname)], DATA.OPTIONS.Leg_2_Analyze, DATA.OPTIONS.FP_used, DATA.OPTIONS.GENERIC.setupIDname, initial_time, final_time, trialname);
+                %%%[DATA.OPTIONS.PATHS.ID_AFTER_RRA.(trialname), DATA.OPTIONS.PATHS.Exload.(trialname)]=ID_app_afterRRA(DATA.OPTIONS.PATHS.MOT.(trialname),DATA.OPTIONS.PATHS.TRC.(trialname), [subjects(s).folder,'\',subjects(s).name], [subjects(s).folder,'/',subjects(s).name, '/',DATA.OPTIONS.PATHS.Kinematics_q.(trialname)], DATA.OPTIONS.Leg_2_Analyze, DATA.OPTIONS.FP_used, DATA.OPTIONS.GENERIC.setupIDname, initial_time, final_time, trialname);
             end
             pause(0.000001)
-
-            if DATA.OPTIONS.ajusted_scaled_model ==1
+            if DATA.OPTIONS.ajusted_scaled_model ==1 && DATA.OPTIONS.RRA ==1
                 ajust_scaled_model_joint_angles([subjects(s).folder,'/',subjects(s).name, '/' DATA.OPTIONS.PATHS.ajusted_model.(trialname)], DATA.OPTIONS.STATIC_PATH.IK_res_static, DATA.OPTIONS.STATIC_ANGLES.IK_res_static)
             end
 
-            if OPTIONS.HAS_PROBE ==1
-                %%%% [model_path_with_probe] = add_probe_to_model(OPTIONS.PATH.SCALED_MODEL)
+            if DATA.OPTIONS.HAS_PROBE ==1
+                [DATA.OPTIONS.PATH.SCALED_MODEL_AFTER_RRA_WITH_PROBE] = add_probe_to_model([subjects(s).folder,'/',subjects(s).name], trialname);
             else
             end
-            if SO ==1
-                [OPTIONS.PATHS.SO_activation.(trialname), OPTIONS.PATHS.SO_force.(trialname)] = SO_app(OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
-                [~,~,SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],OPTIONS.PATHS.SO_activation.(trialname));
-                [~,~,SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,OPTIONS.PATHS.SO_force.(trialname));
+            if DATA.OPTIONS.SO ==1
+                [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname)] = SO_app(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
+                [~,~,DATA.SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.SO_activation.(trialname));
+                [~,~,DATA.SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_force.(trialname));
             else
             end
 
@@ -231,17 +232,15 @@ for c = startcon: endcon
                 DATA.PARAMETERS.(DATA.OPTIONS.LEG).(['IC_GRF_',ARRAY.Properties.VariableNames{op} ])(1,dy)  = table2array(ARRAY(DATA.CONTACT_ANALOG.(trialname)(1),ARRAY.Properties.VariableNames{op}));
             end
             clearvars ARRAY
-            %%
+            %% 
             DATA.NORMAL.HEADER{1,dy} = trialname;
-            % PARAMETERS.DUMMY(1,dy) = 0;
-
             try
                 % % % %     %% only works for one specific model
-                DATA.NORMAL.(OPTIONS.LEG).KAM(:,dy) = normalize_vector((DATA.MOMENT_TABLE.(trialname).(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames{string(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames) == ['knee_valgus_lat_',lower(DATA.OPTIONS.Leg_2_Analyze(1)),'_moment']})(DATA.CONTACT_KINEMATIC.(trialname)(1):DATA.CONTACT_KINEMATIC.(trialname)(1)+0.1/(1/DATA.OPTIONS.FREQ_KINEMATIC))/OPTIONS.ANTRO.mass), 0.5)*multi;
-                DATA.NORMAL.(OPTIONS.LEG).KAM_LAT(:,dy) =  normalize_vector((DATA.MOMENT_TABLE.(trialname).(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames{string(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames) == ['knee_valgus_lat_',lower(DATA.OPTIONS.Leg_2_Analyze(1)),'_moment']})(DATA.CONTACT_KINEMATIC.(trialname)(1):DATA.CONTACT_KINEMATIC.(trialname)(1)+0.1/(1/DATA.OPTIONS.FREQ_KINEMATIC))/OPTIONS.ANTRO.mass), 0.5)';
-                DATA.NORMAL.(OPTIONS.LEG).KAM_MED(:,dy) = normalize_vector((DATA.MOMENT_TABLE.(trialname).(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames{string(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames) == ['knee_varus_med_',lower(DATA.OPTIONS.Leg_2_Analyze(1)),'_moment']})(DATA.CONTACT_KINEMATIC.(trialname)(1):DATA.CONTACT_KINEMATIC.(trialname)(1)+0.1/(1/OPTIONS.FREQ_KINEMATIC))/OPTIONS.ANTRO.mass), 0.5)';
+                DATA.NORMAL.(DATA.OPTIONS.LEG).KAM(:,dy) = normalize_vector((DATA.MOMENT_TABLE.(trialname).(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames{string(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames) == ['knee_valgus_lat_',lower(DATA.OPTIONS.Leg_2_Analyze(1)),'_moment']})(DATA.CONTACT_KINEMATIC.(trialname)(1):DATA.CONTACT_KINEMATIC.(trialname)(1)+0.1/(1/DATA.OPTIONS.FREQ_KINEMATIC))/DATA.OPTIONS.ANTRO.mass), 0.5)*multi;
+                DATA.NORMAL.(DATA.OPTIONS.LEG).KAM_LAT(:,dy) =  normalize_vector((DATA.MOMENT_TABLE.(trialname).(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames{string(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames) == ['knee_valgus_lat_',lower(DATA.OPTIONS.Leg_2_Analyze(1)),'_moment']})(DATA.CONTACT_KINEMATIC.(trialname)(1):DATA.CONTACT_KINEMATIC.(trialname)(1)+0.1/(1/DATA.OPTIONS.FREQ_KINEMATIC))/DATA.OPTIONS.ANTRO.mass), 0.5)';
+                DATA.NORMAL.(DATA.OPTIONS.LEG).KAM_MED(:,dy) = normalize_vector((DATA.MOMENT_TABLE.(trialname).(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames{string(DATA.MOMENT_TABLE.(trialname).Properties.VariableNames) == ['knee_varus_med_',lower(DATA.OPTIONS.Leg_2_Analyze(1)),'_moment']})(DATA.CONTACT_KINEMATIC.(trialname)(1):DATA.CONTACT_KINEMATIC.(trialname)(1)+0.1/(1/DATA.OPTIONS.FREQ_KINEMATIC))/DATA.OPTIONS.ANTRO.mass), 0.5)';
                 % % % %     % NORMAL.(OPTIONS.LEG).RESGRF(:,dy) =normalize_vector( RES_GRF.(trialname)(CONTACT_ANALOG.(trialname)(1):CONTACT_ANALOG.(trialname)(1)+0.1/(1/OPTIONS.FREQ_KINEMATIC)), 0.5);            NORMAL.(OPTIONS.LEG).KAM(:,dy) = NORMAL.(OPTIONS.LEG).KAM(:,dy) *multi;
-                [PARAMETERS.(OPTIONS.LEG).KAM(1,dy), ~] = max (DATA.NORMAL.(OPTIONS.LEG).KAM(:,dy));
+                [DATA.PARAMETERS.(DATA.OPTIONS.LEG).KAM(1,dy), ~] = max (DATA.NORMAL.(DATA.OPTIONS.LEG).KAM(:,dy));
                 % % % %     figure(1)
                 % % % %     plot(NORMAL.(OPTIONS.LEG).KAM(:,dy), 'k')
                 % % % %     hold on
@@ -255,92 +254,93 @@ for c = startcon: endcon
 
 
             %% save the output after every file
-            if OPTIONS.MARKERLESS==0 && RRA ==0
-                save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'MOMENT_TABLE','ANGLES_TABLE', 'GRF_TABLE',  'MARKERS', 'OPTIONS', 'CONTACT_KINEMATIC', 'CONTACT_ANALOG', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
-
-            elseif OPTIONS.MARKERLESS==0 && RRA ==1
-                save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'MOMENT_TABLE','ANGLES_TABLE', 'GRF_TABLE',  'MARKERS', 'OPTIONS', 'CONTACT_KINEMATIC', 'CONTACT_ANALOG', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE', 'RRA_TABLE', 'SO_TABLE')
-
-            elseif OPTIONS.MARKERLESS==1
-                save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'ANGLES_TABLE', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
-            end
+            save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], '-struct', 'DATA');
+            % % % % % % if OPTIONS.MARKERLESS==0 && RRA ==0
+            % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'MOMENT_TABLE','ANGLES_TABLE', 'GRF_TABLE',  'MARKERS', 'OPTIONS', 'CONTACT_KINEMATIC', 'CONTACT_ANALOG', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
+            % % % % % % 
+            % % % % % % elseif OPTIONS.MARKERLESS==0 && RRA ==1
+            % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'MOMENT_TABLE','ANGLES_TABLE', 'GRF_TABLE',  'MARKERS', 'OPTIONS', 'CONTACT_KINEMATIC', 'CONTACT_ANALOG', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE', 'RRA_TABLE', 'SO_TABLE')
+            % % % % % % 
+            % % % % % % elseif OPTIONS.MARKERLESS==1
+            % % % % % %     save([subjects(s).folder,'/',subjects(s).name,'OpenSim.mat' ], 'ANGLES_TABLE', 'NORMAL', 'PARAMETERS', 'BK_ACC_TABLE', 'BK_VEL_TABLE', 'BK_POS_TABLE')
+            % % % % % % end
         end
         % clear all varibles from the subject
-        clearvars GRF MARKERS CONTACT_KINEMATIC CONTACT_ANALOG NORMAL PARAMETERS MOMENT_TABLE ANGLES_TABLE GRF_TABLE BK_ACC_TABLE BK_VEL_TABLE BK_POS_TABLE anthro_file fileListc3d static_c3d_path temp_c3d trialname trials RRA_TABLE
-        OPTIONS = rmfield (OPTIONS, 'PATHS');
-        OPTIONS = rmfield (OPTIONS, 'ANTRO');
+        clearvars anthro_file fileListc3d static_c3d_path temp_c3d trialname trials
+        DATA.OPTIONS = rmfield (DATA.OPTIONS, 'PATHS');
+        DATA.OPTIONS = rmfield (DATA.OPTIONS, 'ANTRO');
     end
 
 end
-warning ("off")
-delete([pathtopfolder, '/', OPTIONS.PATH.GENERIC_MODEL])
-delete([pathtopfolder, '/', OPTIONS.GENERIC.markersetname])
-delete([pathtopfolder, '/', OPTIONS.GENERIC.scalesetupname])
-delete([pathtopfolder, '/', OPTIONS.GENERIC.setupIKname])
-delete( [pathtopfolder, '/', OPTIONS.GENERIC.setupIDname])
-delete([pathtopfolder, '/', OPTIONS.GENERIC.setupBKname])
-
-try
-    delete([pathtopfolder, '/ExternalForce_Setup_FP1_Left.xml'])
-    delete([pathtopfolder, '/ExternalForce_Setup_FP2_Left.xml'])
-    delete([pathtopfolder, '/ExternalForce_Setup_FP1_Right.xml'])
-    delete([pathtopfolder, '/ExternalForce_Setup_FP2_Right.xml'])
-catch
-end
-toc
-disp('Finished')
-
-%% MERGE
-clc
-
-% OPTIONS.top_folder = 'C:\Users\adpatrick\Downloads\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
-%
-% [MERGED] = on_merge_data_main(OPTIONS.top_folder);
-% MERGED.NORMAL.TIMECURVES.pelvis_tilt;
-% MERGED.TIMECURVES.KAM;
-% MERGED.INFO.NAME2;
-%
-% LineList = plot (MERGED.TIMECURVES.KAM', 'Color', [[0, 0, 0], 0.1],'LineWidth',0.2, 'LineStyle','-');
-% set(LineList, 'ButtonDownFcn', {@myLineCallback, LineList,MERGED.INFO.NAME_Long });
-% stan_plot_100ms
-
-% figure(2)
-% plot(MERGED.TIMECURVES.KAM_LAT', 'color', 'red')
-% hold on
-% plot(MERGED.TIMECURVES.KAM_MED', 'color','green')
-
-%
-% hoch = 1;
-% S = dir(fullfile([conditions(c).folder,'/',conditions(c).name],'*.mat'));
-% for s = 1 : length (S)
-%     dat = load([S(s).folder, '/', S(s).name]);
-%     for p = 1: length(dat.NORMAL.(OPTIONS.LEG).KAM(1,:))
-%         WERTE(hoch,:) = (dat.NORMAL.(OPTIONS.LEG).KAM(:,p))';
-%         namen{hoch,1} = dat.NORMAL.HEADER{1, p}  ;
-%         hoch = hoch+1;
-%         P(s,1) = mean(dat.PARAMETERS.(OPTIONS.LEG).KAM);
-%         P(s,2) = std(dat.PARAMETERS.(OPTIONS.LEG).KAM);
-%         VEL(s,1) = mean(sqrt(dat.PARAMETERS.(OPTIONS.LEG).IC_BKVEL_center_of_mass_X.^2+dat.PARAMETERS.(OPTIONS.LEG).IC_BKVEL_center_of_mass_Z.^2));
-%         torso(s,1) = mean(dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_lumbar_bending);
-%         t{1,s} = S(s).name;
-%         try
-%             torso_lean(s,1)=mean(PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_tilt-dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_lumbar_bending);
-%             fsa(s,1) = mean(PARAMETERS.(OPTIONS.LEG).IC_ANGLES_knee_angle_r+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_ankle_angle_r+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_list+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_hip_flexion_r);
-%         catch
-%             a = 2;
-%             torso_lean(s,1)=mean(dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_tilt(:,2)-dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_lumbar_bending(:,2))
-%             fsa(s,1) =mean(dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_knee_angle_r(:,2)+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_ankle_angle_r(:,2)+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_list(:,2)+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_hip_flexion_r(:,2));
-%         end
-%     end
-%     clearvars dat
-% end
-% close all
-% LineList = plot (WERTE', 'Color', [[0, 0, 0], 0.1],'LineWidth',0.2, 'LineStyle','-');
-% set(LineList, 'ButtonDownFcn', {@myLineCallback, LineList,namen });
-% stan_plot_100ms
-% mean(max(WERTE'))
-% mean(torso)
-% plot(torso_lean)
-% mean(torso_lean)
-% mean(fsa)
-% plot(fsa)
+% % % % % warning ("off")
+% % % % % delete([pathtopfolder, '/', OPTIONS.PATH.GENERIC_MODEL])
+% % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.markersetname])
+% % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.scalesetupname])
+% % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.setupIKname])
+% % % % % delete( [pathtopfolder, '/', OPTIONS.GENERIC.setupIDname])
+% % % % % delete([pathtopfolder, '/', OPTIONS.GENERIC.setupBKname])
+% % % % % 
+% % % % % try
+% % % % %     delete([pathtopfolder, '/ExternalForce_Setup_FP1_Left.xml'])
+% % % % %     delete([pathtopfolder, '/ExternalForce_Setup_FP2_Left.xml'])
+% % % % %     delete([pathtopfolder, '/ExternalForce_Setup_FP1_Right.xml'])
+% % % % %     delete([pathtopfolder, '/ExternalForce_Setup_FP2_Right.xml'])
+% % % % % catch
+% % % % % end
+% % % % % toc
+% % % % % disp('Finished')
+% % % % % 
+% % % % % %% MERGE
+% % % % % clc
+% % % % % 
+% % % % % % OPTIONS.top_folder = 'C:\Users\adpatrick\Downloads\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
+% % % % % %
+% % % % % % [MERGED] = on_merge_data_main(OPTIONS.top_folder);
+% % % % % % MERGED.NORMAL.TIMECURVES.pelvis_tilt;
+% % % % % % MERGED.TIMECURVES.KAM;
+% % % % % % MERGED.INFO.NAME2;
+% % % % % %
+% % % % % % LineList = plot (MERGED.TIMECURVES.KAM', 'Color', [[0, 0, 0], 0.1],'LineWidth',0.2, 'LineStyle','-');
+% % % % % % set(LineList, 'ButtonDownFcn', {@myLineCallback, LineList,MERGED.INFO.NAME_Long });
+% % % % % % stan_plot_100ms
+% % % % % 
+% % % % % % figure(2)
+% % % % % % plot(MERGED.TIMECURVES.KAM_LAT', 'color', 'red')
+% % % % % % hold on
+% % % % % % plot(MERGED.TIMECURVES.KAM_MED', 'color','green')
+% % % % % 
+% % % % % %
+% % % % % % hoch = 1;
+% % % % % % S = dir(fullfile([conditions(c).folder,'/',conditions(c).name],'*.mat'));
+% % % % % % for s = 1 : length (S)
+% % % % % %     dat = load([S(s).folder, '/', S(s).name]);
+% % % % % %     for p = 1: length(dat.NORMAL.(OPTIONS.LEG).KAM(1,:))
+% % % % % %         WERTE(hoch,:) = (dat.NORMAL.(OPTIONS.LEG).KAM(:,p))';
+% % % % % %         namen{hoch,1} = dat.NORMAL.HEADER{1, p}  ;
+% % % % % %         hoch = hoch+1;
+% % % % % %         P(s,1) = mean(dat.PARAMETERS.(OPTIONS.LEG).KAM);
+% % % % % %         P(s,2) = std(dat.PARAMETERS.(OPTIONS.LEG).KAM);
+% % % % % %         VEL(s,1) = mean(sqrt(dat.PARAMETERS.(OPTIONS.LEG).IC_BKVEL_center_of_mass_X.^2+dat.PARAMETERS.(OPTIONS.LEG).IC_BKVEL_center_of_mass_Z.^2));
+% % % % % %         torso(s,1) = mean(dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_lumbar_bending);
+% % % % % %         t{1,s} = S(s).name;
+% % % % % %         try
+% % % % % %             torso_lean(s,1)=mean(PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_tilt-dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_lumbar_bending);
+% % % % % %             fsa(s,1) = mean(PARAMETERS.(OPTIONS.LEG).IC_ANGLES_knee_angle_r+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_ankle_angle_r+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_list+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_hip_flexion_r);
+% % % % % %         catch
+% % % % % %             a = 2;
+% % % % % %             torso_lean(s,1)=mean(dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_tilt(:,2)-dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_lumbar_bending(:,2))
+% % % % % %             fsa(s,1) =mean(dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_knee_angle_r(:,2)+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_ankle_angle_r(:,2)+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_pelvis_list(:,2)+dat.PARAMETERS.(OPTIONS.LEG).IC_ANGLES_hip_flexion_r(:,2));
+% % % % % %         end
+% % % % % %     end
+% % % % % %     clearvars dat
+% % % % % % end
+% % % % % % close all
+% % % % % % LineList = plot (WERTE', 'Color', [[0, 0, 0], 0.1],'LineWidth',0.2, 'LineStyle','-');
+% % % % % % set(LineList, 'ButtonDownFcn', {@myLineCallback, LineList,namen });
+% % % % % % stan_plot_100ms
+% % % % % % mean(max(WERTE'))
+% % % % % % mean(torso)
+% % % % % % plot(torso_lean)
+% % % % % % mean(torso_lean)
+% % % % % % mean(fsa)
+% % % % % % plot(fsa)
