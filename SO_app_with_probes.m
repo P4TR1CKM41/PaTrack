@@ -17,7 +17,7 @@ analyeTool.setFinalTime(final_time);
 copyfile([pathtopfolder, '\',OPTIONS.GENERIC.rra_actuator],[tempfolder, '\', OPTIONS.GENERIC.rra_actuator]);
 analyeTool.setExternalLoadsFileName([OPTIONS.PATHS.Exload.(trialname)]);
 analyeTool.setCoordinatesFileName([tempfolder, '\', OPTIONS.PATHS.Kinematics_q.(trialname)]);
-analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
+%analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
 % analyeTool.setModel(model)
 analyeTool.print([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
 analyeTool.run();
