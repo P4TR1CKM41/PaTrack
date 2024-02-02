@@ -39,9 +39,9 @@ wholeBodyProbe.setName("metabolics");
 % probe.
 try
     for iMuscle = 1:model.getMuscles().getSize()
-        iMuscle
-        model.getMuscles().getSize()
-        thisMuscle = model.getMuscles().get(iMuscle)
+        iMuscle;
+        model.getMuscles().getSize();
+        thisMuscle = model.getMuscles().get(iMuscle);
 
         % Get the slow-twitch ratio from the data we read earlier. Start with
         % the default value.
