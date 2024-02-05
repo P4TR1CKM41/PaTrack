@@ -18,13 +18,18 @@ copyfile([pathtopfolder, '\',OPTIONS.GENERIC.rra_actuator],[tempfolder, '\', OPT
 analyeTool.setExternalLoadsFileName([OPTIONS.PATHS.Exload.(trialname)]);
 analyeTool.setCoordinatesFileName([tempfolder, '\', OPTIONS.PATHS.Kinematics_q.(trialname)]);
 %analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
-% analyeTool.setModel(model)
+analyeTool.setModel(model)
 analyeTool.print([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
 %analyeTool.run();
-tool = AnalyzeTool([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
-tool.setModel(model);
+% run it via command window and not matlab
+setup_path = [tempfolder,  '\','Setup_SO_' ,trialname, '.xml'];
+command = ['opensim-cmd run-tool "', setup_path, '"'];
+[status, cmdout] = system(command)
 
-tool.run();
+% % % % % tool = AnalyzeTool([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
+% % % % % tool.setModel(model);
+% % % % %
+% % % % % tool.run();
 toc
 
 activations = [trialname, '_StaticOptimization_activation.sto'];

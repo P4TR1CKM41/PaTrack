@@ -222,10 +222,17 @@ TRCFileAdapter().write( self.markers, outputPath)
             for r = 1: no_fps
                 temp_in = find(~cellfun(@isempty,(strfind(fp_names,num2str(r)))));
                 Stance.(['f', num2str(r)]) = find(vec.(['f', num2str(r)])(:,2)>30);
+                %% add some extra buffer 
+                % % % % try
+                % % % %  Stance.(['f', num2str(r)]) = [Stance.(['f', num2str(r)])(1)-20:Stance.(['f', num2str(r)])(end)+20];
+                % % % % catch
+                % % % % end
                 out_of_fp_contact = setdiff(frame_vector,Stance.(['f', num2str(r)]));
+                
                 vec.(['f', num2str(r)])(out_of_fp_contact,:) = 0;
-                vec.(['p', num2str(r)])(out_of_fp_contact,:) = 0;
+                %vec.(['p', num2str(r)])(out_of_fp_contact,:) = 0;
                 vec.(['m', num2str(r)])(out_of_fp_contact,:) = 0;
+                vec.(['p', num2str(r)])(:,2) = 0;
                 % figure(r)
                 % subplot(3,1,1)
                 % plot(vec.(['f', num2str(r)]))
@@ -236,6 +243,7 @@ TRCFileAdapter().write( self.markers, outputPath)
                 % subplot(3,1,3)
                 % plot(vec.(['m', num2str(r)]))
                 % title ('Moment')
+
             end
             %% filter
             index_force=  find(~cellfun(@isempty,(strfind(names,'f'))));
