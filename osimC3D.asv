@@ -247,18 +247,19 @@ TRCFileAdapter().write( self.markers, outputPath)
                 vec.(names{r, 1})(isnan(vec.(names{r, 1})))=0;
                 if  contains((names{r, 1}), 'p') ==1 
                     fp_numper_temp = (erase((names{r, 1}), 'p')); 
-                    x = vec.(['p', fp_numper_temp])(:,1);
-                    y = vec.(['p', fp_numper_temp])(:,2);
-                    z = vec.(['p', fp_numper_temp])(:,3);
-                    Stance.(['f', fp_numper_temp]);
-                    %% get COP with stance only
-                    vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),1)  = filtfilt(b_filt,a_filt,(x(Stance.(['f', fp_numper_temp]))));
-                    vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),2)  = filtfilt(b_filt,a_filt,(y(Stance.(['f', fp_numper_temp]))));
-                    vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),3)  = filtfilt(b_filt,a_filt,(z(Stance.(['f', fp_numper_temp]))));
-                    clearvars x y z
-                   
+
+x = vec.(['p', fp_numper_temp])(:,1);
+y = vec.(['p', fp_numper_temp])(:,2);
+z = vec.(['p', fp_numper_temp])(:,3);
+Stance.(['f', fp_numper_temp]);
+%% get COP with stance only
+
+vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),1)  = filtfilt(b_filt,a_filt,(x(Stance.(['f', fp_numper_temp]))));
+
+clearvars x y z
+                     vec.(names{r, 1}) =vec.(names{r, 1});
                 elseif contains((names{r, 1}), 'time') ==1
-                    vec.(names{r, 1}) =vec.(names{r, 1});
+                   
 
                 else
                     for t = 1:length(vec.(names{r, 1})(1,:))
