@@ -1,4 +1,4 @@
-function [ftkratio, TRC_FILE, MOT_FILE, Y, Y_kinematic, markerStruct, forcesStruct, pf, af]=dynamic_c3d_to_try(path, cut, FP_used, threshold, convert_type, removemarkers)
+function [ftkratio, TRC_FILE, MOT_FILE, Y, Y_kinematic, markerStruct, forcesStruct, pf, af]=dynamic_c3d_to_try(path, cut, FP_used, threshold, convert_type, removemarkers, additional_rot, cut_off_markers)
 %% Cut
 acq = btkReadAcquisition(path);
 pf = btkGetPointFrequency(acq);
@@ -78,7 +78,7 @@ btkCloseAcquisition(acq)
 
  acq1 = btkReadAcquisition(path);
 [markers, markersInfo, markersResidual] = btkGetMarkers(acq1);
-[b_filt,a_filt] = butter(2,  20/(markersInfo.frequency/2), 'low');
+[b_filt,a_filt] = butter(2,  cut_off_markers/(markersInfo.frequency/2), 'low');
 markernames = fieldnames(markers);
 [nframes,  ~] = size(markers.(markernames{1, 1}));
 acq = btkNewAcquisition(length (markernames), nframes); % 20 points and 2000 frames
@@ -114,6 +114,10 @@ btkCloseAcquisition(acq1)
 
 c3d = osimC3D(path,convert_type ); %1
 c3d.rotateData('x' ,-90); %('x' ,-90); for goran ('z',90)
+if additional_rot ==1
+    c3d.rotateData('y' ,90); %('x' ,-90); for goran ('z',90)
+else
+end
 % % c3d.rotateData('y' ,270); %('x' ,-90); for goran ('z',90)
 c3d.convertMillimeters2Meters();
 %c3d.writeTRC([erase(path, '.c3d'), '.trc']);
@@ -122,6 +126,11 @@ c3d.writeMOT([erase(path, '.c3d'), '.mot']);
 clearvars c3d
 c3d = osimC3D([erase(path, '.c3d'), '_filt.c3d'],convert_type ); %1
 c3d.rotateData('x' ,-90); %('x' ,-90); for goran ('z',90)
+if additional_rot ==1
+    c3d.rotateData('y' ,90); %('x' ,-90); for goran ('z',90)
+else
+end
+
 % % c3d.rotateData('y' ,270); %('x' ,-90); for goran ('z',90)
 c3d.convertMillimeters2Meters();
 c3d.writeTRC([erase([erase(path, '.c3d'), '_filt.c3d'], '.c3d'), '.trc']);

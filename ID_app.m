@@ -40,6 +40,9 @@ elseif strcmp(leg, 'Left') && FP_used==1
     external_loads = ExternalLoads([cd, '/', 'ExternalForce_Setup_FP1_Left.xml'],1); %this is the stupid fore file
 elseif strcmp(leg, 'Left') && FP_used==2
     external_loads = ExternalLoads([cd, '/', 'ExternalForce_Setup_FP2_Left.xml'],1); %this is the stupid fore file
+else
+    external_loads = ExternalLoads([cd, '/', 'ExternalForce_Setup_FP3_Right.xml'],1); %this is the stupid fore file
+
 end
 
 %external_loads = ExternalLoads([cd, '/', 'ExternalForce_Setup.xml'],1); %this is the stupid fore file

@@ -1,7 +1,8 @@
-function  static_c3d_to_trc_Motrack(path_to_static, OPTIONS)
+function  static_c3d_to_trc_Motrack(path_to_static, OPTIONS, add_virtuals, additional_rot)
 acq = btkReadAcquisition(path_to_static);
 %% 1 fill all gaps
 tic
+if add_virtuals ==1
 [markers, markersInfo, markersResidual] = btkGetMarkers(acq);
 markernames = fieldnames (markers);
 
@@ -399,10 +400,17 @@ end
 btkWriteAcquisition(acq,path_to_static)
 btkCloseAcquisition(acq);
 
+else
+
+end
 %% now create a trc file
 c3d = osimC3D(path_to_static,1);
 %% Rotate the data
 c3d.rotateData('x' ,-90); %('x' ,-90); for goran ('z',90)
+if additional_rot ==1
+c3d.rotateData('y' ,90);
+else
+end
 c3d.convertMillimeters2Meters();
 decom = split(path_to_static, '/');
 name = replace(decom{end,1}, '.c3d', '.trc');

@@ -15,9 +15,12 @@ copyfile([setup_files(1).folder, '/', OPTIONS.PATH.GENERIC_MODEL], [pathtopfolde
 copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.markersetname], [pathtopfolder, '/', OPTIONS.GENERIC.markersetname])
 copyfile([setup_files(1).folder, '/',OPTIONS.GENERIC.scalesetupname], [pathtopfolder, '/', OPTIONS.GENERIC.scalesetupname])
 copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.setupIKname], [pathtopfolder, '/', OPTIONS.GENERIC.setupIKname])
+try
 copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.setupIDname], [pathtopfolder, '/', OPTIONS.GENERIC.setupIDname])
+end
+try
 copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.setupBKname ], [pathtopfolder, '/', OPTIONS.GENERIC.setupBKname])
-
+end
 if RRA ==1
 OPTIONS.GENERIC.rra_actuator = 'gait2392_RRA_Actuators.xml';
 OPTIONS.GENERIC.rra_controlconstraints = 'gait2392_RRA_ControlConstraints.xml';
@@ -32,7 +35,10 @@ end
 
 if SO == 1
 OPTIONS.GENERIC.so_setup = 'SO_Setup.xml';
+OPTIONS.GENERIC.so_Actuators = 'gait2392_SO_Actuators.xml';
 copyfile([setup_files(1).folder, '/', OPTIONS.GENERIC.so_setup ], [pathtopfolder, '/', OPTIONS.GENERIC.so_setup])
+copyfile([setup_files(1).folder, '/',OPTIONS.GENERIC.so_Actuators ], [pathtopfolder, '/', OPTIONS.GENERIC.so_Actuators])
+
 else
 end
 if PROBE ==1
@@ -47,6 +53,11 @@ try
     copyfile([setup_files(1).folder, '/ExternalForce_Setup_FP2_Left.xml'], [pathtopfolder, '/ExternalForce_Setup_FP2_Left.xml'])
     copyfile([setup_files(1).folder, '/ExternalForce_Setup_FP1_Right.xml'], [pathtopfolder, '/ExternalForce_Setup_FP1_Right.xml'])
     copyfile([setup_files(1).folder, '/ExternalForce_Setup_FP2_Right.xml'], [pathtopfolder, '/ExternalForce_Setup_FP2_Right.xml'])
+catch
+end
+try
+    copyfile([setup_files(1).folder, '/ExternalForce_Setup_FP3_Right.xml'], [pathtopfolder, '/ExternalForce_Setup_FP3_Right.xml'])
+
 catch
 end
 end

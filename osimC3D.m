@@ -186,14 +186,14 @@ classdef osimC3D < matlab.mixin.SetGet
 
             import org.opensim.modeling.*
 
-%%
+            %%
 
-%%
-%dummy_markers = osimTableFromStruct(vec);
-%Write to file
-TRCFileAdapter().write( self.markers, outputPath)
-% a=2;
-% disp(['Marker file written to ' outputPath]);
+            %%
+            %dummy_markers = osimTableFromStruct(vec);
+            %Write to file
+            TRCFileAdapter().write( self.markers, outputPath)
+            % a=2;
+            % disp(['Marker file written to ' outputPath]);
         end
         function writeMOT(self,varargin)
             % Write force data to mot file.
@@ -213,37 +213,60 @@ TRCFileAdapter().write( self.markers, outputPath)
             % vec.m2(isnan(vec.m2))=0;
             % % % % a=2;
             [b_filt,a_filt] = butter(2,  20/(self.getRate_force()/2), 'low');
+            [b_filt2,a_filt2] = butter(4,  40/(self.getRate_force()/2), 'low');
+
             names = fieldnames (vec);
             fp_names = fieldnames(vec);
             no_fps = (length(fp_names)-1)/3;
             frames = length(vec.(fp_names{1, 1}  ));
             frame_vector = [1:frames];
-            
+
             for r = 1: no_fps
                 temp_in = find(~cellfun(@isempty,(strfind(fp_names,num2str(r)))));
                 Stance.(['f', num2str(r)]) = find(vec.(['f', num2str(r)])(:,2)>30);
-                %% add some extra buffer 
-                % % % % try
-                % % % %  Stance.(['f', num2str(r)]) = [Stance.(['f', num2str(r)])(1)-20:Stance.(['f', num2str(r)])(end)+20];
-                % % % % catch
-                % % % % end
-                out_of_fp_contact = setdiff(frame_vector,Stance.(['f', num2str(r)]));
-                
-                vec.(['f', num2str(r)])(out_of_fp_contact,:) = 0;
-                %vec.(['p', num2str(r)])(out_of_fp_contact,:) = 0;
-                vec.(['m', num2str(r)])(out_of_fp_contact,:) = 0;
+                % try
+                %     Stance2.(['f', num2str(r)]) = [  Stance.(['f', num2str(r)])(1)+20:  Stance.(['f', num2str(r)])(end)];
+                % catch
+                %     Stance2.(['f', num2str(r)]) =  Stance.(['f', num2str(r)]);
+                % end
+                %% add some extra buffer
+                % try
+                %  Stance.(['f', num2str(r)]) = [Stance.(['f', num2str(r)])(1)-20:Stance.(['f', num2str(r)])(end)+20];
+                % catch
+                % end
+                out_of_fp_contact.(['f', num2str(r)]) = setdiff(frame_vector,Stance.(['f', num2str(r)]));
+
+                vec.(['f', num2str(r)])(out_of_fp_contact.(['f', num2str(r)]),:) = 0;
+                vec.(['p', num2str(r)])(out_of_fp_contact.(['f', num2str(r)]),:) = 0;
+                vec.(['m', num2str(r)])(out_of_fp_contact.(['f', num2str(r)]),:) = 0;
                 vec.(['p', num2str(r)])(:,2) = 0;
+                try
+                    vec.(['p', num2str(r)])([Stance.(['f', num2str(r)])(1)-40:Stance.(['f', num2str(r)])(1)-1],:) = repmat(vec.(['p', num2str(r)])(Stance.(['f', num2str(r)])(1),:),40, 1);
+                catch
+
+                end
+                % try
                 % figure(r)
                 % subplot(3,1,1)
                 % plot(vec.(['f', num2str(r)]))
+                % hold on
+                % xline(Stance.(['f', num2str(r)])(1))
+                % xline(Stance.(['f', num2str(r)])(end))
                 % title ('Force')
                 % subplot(3,1,2)
                 % plot(vec.(['p', num2str(r)]))
+                % hold on
+                % xline(Stance.(['f', num2str(r)])(1))
+                % xline(Stance.(['f', num2str(r)])(end))
                 % title ('COP')
                 % subplot(3,1,3)
                 % plot(vec.(['m', num2str(r)]))
+                % hold on
+                % xline(Stance.(['f', num2str(r)])(1))
+                % xline(Stance.(['f', num2str(r)])(end))
                 % title ('Moment')
-
+                % catch
+                % end
             end
             %% filter
             index_force=  find(~cellfun(@isempty,(strfind(names,'f'))));
@@ -253,18 +276,41 @@ TRCFileAdapter().write( self.markers, outputPath)
             % end
             for r = 1 : length(names)
                 vec.(names{r, 1})(isnan(vec.(names{r, 1})))=0;
-                if  contains((names{r, 1}), 'p') ==1 
-                    fp_numper_temp = (erase((names{r, 1}), 'p')); 
+                if  contains((names{r, 1}), 'p') ==1
+                    fp_numper_temp = (erase((names{r, 1}), 'p'));
                     x = vec.(['p', fp_numper_temp])(:,1);
                     y = vec.(['p', fp_numper_temp])(:,2);
                     z = vec.(['p', fp_numper_temp])(:,3);
                     Stance.(['f', fp_numper_temp]);
                     %% get COP with stance only
-                    vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),1)  = filtfilt(b_filt,a_filt,(x(Stance.(['f', fp_numper_temp]))));
-                    vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),2)  = filtfilt(b_filt,a_filt,(y(Stance.(['f', fp_numper_temp]))));
-                    vec.(['p', fp_numper_temp])(Stance.(['f', fp_numper_temp]),3)  = filtfilt(b_filt,a_filt,(z(Stance.(['f', fp_numper_temp]))));
+                    % try
+                    % vec.(['p', fp_numper_temp])([Stance.(['f', fp_numper_temp])(1)+20:Stance.(['f', fp_numper_temp])(end)],1)  =filtfilt(b_filt,a_filt,x([Stance.(['f', fp_numper_temp])(1)+20:Stance.(['f', fp_numper_temp])(end)]));  %filtfilt(b_filt,a_filt,x(Stance.(['f', fp_numper_temp])));
+                    % vec.(['p', fp_numper_temp])([Stance.(['f', fp_numper_temp])(1)+20:Stance.(['f', fp_numper_temp])(end)],2)  = filtfilt(b_filt,a_filt,y([Stance.(['f', fp_numper_temp])(1)+20:Stance.(['f', fp_numper_temp])(end)]));%filtfilt(b_filt,a_filt,(y(Stance.(['f', fp_numper_temp]))));
+                    % vec.(['p', fp_numper_temp])([Stance.(['f', fp_numper_temp])(1)+20:Stance.(['f', fp_numper_temp])(end)],3)  = filtfilt(b_filt,a_filt,x([Stance.(['f', fp_numper_temp])(1)+20:Stance.(['f', fp_numper_temp])(end)]));%filtfilt(b_filt,a_filt,(z(Stance.(['f', fp_numper_temp]))));
+                    % catch
+                    % end
+                    vec.(['p', fp_numper_temp])(out_of_fp_contact.(['f', fp_numper_temp]),:) = 0;
+
+                    vec.(['f', fp_numper_temp])(out_of_fp_contact.(['f', fp_numper_temp]),:) = 0;
+                    % % %     figure(str2num(fp_numper_temp))
+                    % % %     subplot(3,1,1)
+                    % % % plot(vec.(['f',fp_numper_temp]))
+                    % % % hold on
+                    % % %
+                    % % % title ('Force')
+                    % % % subplot(3,1,2)
+                    % % % plot(vec.(['p',fp_numper_temp]))
+                    % % % hold on
+                    % % %
+                    % % % title ('COP')
+                    % % % subplot(3,1,3)
+                    % % % plot(vec.(['m',fp_numper_temp]))
+                    % % % hold on
+
+                    % % % % title ('Moment')
+
                     clearvars x y z
-                   
+
                 elseif contains((names{r, 1}), 'time') ==1
                     vec.(names{r, 1}) =vec.(names{r, 1});
 
@@ -274,19 +320,68 @@ TRCFileAdapter().write( self.markers, outputPath)
                     end
                 end
             end
+
+
             % % % %% downsample
             % % % clearvars vec2
             % % % array = vec;
             % % % namen  = fieldnames (array);
             % % % currentfs = 2000;
             % % % targetsfs = 1000;
-            % % % 
+            % % %
             % % % for u = 1 : length (namen)
             % % %     [row, col]= size (array.(namen{u, 1}));
             % % %     for y = 1: col
             % % %         vec2.(namen{u, 1})(:,y) = downsample(array.(namen{u, 1})(:,y), 10);
             % % %     end
             % % % end
+            %%
+            fp_names_test = fieldnames(vec);
+
+            for y = 1 : length (fp_names_test)-1
+
+                fp_num_current = str2num(fp_names_test{y, 1}(2));
+
+                % figure(fp_num_current)
+                if contains(fp_names_test{y, 1}(1), 'f')
+                    % subplot(3,1,1)
+                    vec.(fp_names_test{y, 1})(out_of_fp_contact.(['f',fp_names_test{y, 1}(2)])', :) = 0;
+                    % plot(vec.(fp_names_test{y, 1}));
+                    % hold on
+                    % 
+                    % try
+                    %     xline(Stance.(fp_names_test{y, 1})(1));
+                    %     xline(Stance.(fp_names_test{y, 1})(end));
+                    % end
+                elseif contains(fp_names_test{y, 1}(1), 'p')
+                    % subplot(3,1,2)
+                    %% filter COP withinstance only
+                    vec.(fp_names_test{y, 1})(out_of_fp_contact.(['f',fp_names_test{y, 1}(2)])', :) = 0;
+                    try
+                        vec.(fp_names_test{y, 1})([Stance.(['f', fp_names_test{y, 1}(2)])(1): Stance.(['f', fp_names_test{y, 1}(2)])(end)],1) = filtfilt(b_filt, a_filt,vec.(fp_names_test{y, 1})([Stance.(['f', fp_names_test{y, 1}(2)])(1): Stance.(['f', fp_names_test{y, 1}(2)])(end)],1));
+                        vec.(fp_names_test{y, 1})([Stance.(['f', fp_names_test{y, 1}(2)])(1): Stance.(['f', fp_names_test{y, 1}(2)])(end)],2) = filtfilt(b_filt, a_filt,vec.(fp_names_test{y, 1})([Stance.(['f', fp_names_test{y, 1}(2)])(1): Stance.(['f', fp_names_test{y, 1}(2)])(end)],2));
+                        vec.(fp_names_test{y, 1})([Stance.(['f', fp_names_test{y, 1}(2)])(1): Stance.(['f', fp_names_test{y, 1}(2)])(end)],3) = filtfilt(b_filt, a_filt,vec.(fp_names_test{y, 1})([Stance.(['f', fp_names_test{y, 1}(2)])(1): Stance.(['f', fp_names_test{y, 1}(2)])(end)],3));
+                    catch ME
+                    end
+                    % plot(vec.(fp_names_test{y, 1}))
+                    % hold on
+                    % try
+                    %     xline(Stance.(['f', fp_names_test{y, 1}(2)])(1));
+                    %     xline(Stance.(['f', fp_names_test{y, 1}(2)])(end));
+                    % end
+                elseif contains(fp_names_test{y, 1}(1), 'm')
+                    % subplot(3,1,3)
+                    vec.(fp_names_test{y, 1})(out_of_fp_contact.(['f',fp_names_test{y, 1}(2)])', :) = 0;
+
+                    % plot(vec.(fp_names_test{y, 1}))
+                    % try
+                    %     xline(Stance.(['f', fp_names_test{y, 1}(2)])(1));
+                    %     xline(Stance.(['f', fp_names_test{y, 1}(2)])(end));
+                    % end
+                end
+            end
+            a = 2;
+
             %%
             %vec.time =  round (vec.time, 5) bringt nichts
             forces = osimTableFromStruct(vec); % CHNAGED from vec to vec2

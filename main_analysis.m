@@ -16,7 +16,7 @@ DATA.OPTIONS.RRA = RRA;% 0 or 1
 DATA.OPTIONS.SO = SO;% 0 or 1
 DATA.OPTIONS.HAS_PROBE =PROBE; % 0 or 1
 DATA.OPTIONS.CORRECT_BODYMASS_FROM_FP =1;% 0 or 1
-DATA.OPTIONS.top_folder = "C:\Users\adpatrick\OneDrive - nih.no\Desktop\HSO_TRUNK_EXTENDED";%'C:\Users\adpc\OneDrive - nih.no\Desktop\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
+DATA.OPTIONS.top_folder = "C:\Users\adpatrick\OneDrive - nih.no\Desktop\Oyvid"; %"C:\Users\adpatrick\OneDrive - nih.no\Desktop\HSO_TRUNK_EXTENDED";%'C:\Users\adpc\OneDrive - nih.no\Desktop\OneDrive_1_1-2-2024\Pivot_Turn_Topfolder'; %changed
 DATA.OPTIONS.MOTION = 'Overground'; %string 'Treadmill' or 'Overground'
 DATA.OPTIONS.Ref_Identifier = 'Static'; % string
 DATA.OPTIONS.MARKERLESS = 0; % 0 or 1
@@ -180,6 +180,8 @@ for c = startcon: endcon
             [~,~,DATA.BK_ACC_TABLE.(trialname)] =  readMOTSTOTRCfiles((DATA.OPTIONS.PATHS.BK_ACC.(trialname)(1:find((DATA.OPTIONS.PATHS.BK_ACC.(trialname)) == '\', 1, 'last'))),(DATA.OPTIONS.PATHS.BK_ACC.(trialname)(find((DATA.OPTIONS.PATHS.BK_ACC.(trialname)) == '\', 1, 'last')+1:end)));
             [~,~,DATA.BK_VEL_TABLE.(trialname)] =  readMOTSTOTRCfiles((DATA.OPTIONS.PATHS.BK_VEL.(trialname)(1:find((DATA.OPTIONS.PATHS.BK_VEL.(trialname)) == '\', 1, 'last'))),(DATA.OPTIONS.PATHS.BK_VEL.(trialname)(find((DATA.OPTIONS.PATHS.BK_VEL.(trialname)) == '\', 1, 'last')+1:end)));
             [~,~,DATA.BK_POS_TABLE.(trialname)] =  readMOTSTOTRCfiles((DATA.OPTIONS.PATHS.BK_POS.(trialname)(1:find((DATA.OPTIONS.PATHS.BK_POS.(trialname)) == '\', 1, 'last'))),(DATA.OPTIONS.PATHS.BK_POS.(trialname)(find((DATA.OPTIONS.PATHS.BK_POS.(trialname)) == '\', 1, 'last')+1:end)));
+            DATA.TD_TIME.(trialname) = (DATA.ANGLES_TABLE.(trialname).time(DATA.CONTACT_KINEMATIC.(trialname)(1)));
+            DATA.TO_TIME.(trialname) = (DATA.ANGLES_TABLE.(trialname).time(DATA.CONTACT_KINEMATIC.(trialname)(end)));
             pause(0.000001)
             %%RRA
             if DATA.OPTIONS.RRA ==1
@@ -194,6 +196,8 @@ for c = startcon: endcon
                 [~,~,DATA.RRA_TABLE.pErr.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.pErr.(trialname));
                 [~,~,DATA.RRA_TABLE.states.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.states.(trialname));
                 DATA.RRA_TABLE.avgResiduals.(trialname) =readcell([subjects(s).folder,'/',subjects(s).name, '/', DATA.OPTIONS.PATHS.avgResiduals.(trialname)]);
+                find((DATA.RRA_TABLE.Kinematics_q.(trialname).time ==  DATA.TD_TIME.(trialname) ));
+                find((DATA.RRA_TABLE.Kinematics_q.(trialname).time ==  DATA.TO_TIME.(trialname) )); % TODO
                 %%%[DATA.OPTIONS.PATHS.ID_AFTER_RRA.(trialname), DATA.OPTIONS.PATHS.Exload.(trialname)]=ID_app_afterRRA(DATA.OPTIONS.PATHS.MOT.(trialname),DATA.OPTIONS.PATHS.TRC.(trialname), [subjects(s).folder,'\',subjects(s).name], [subjects(s).folder,'/',subjects(s).name, '/',DATA.OPTIONS.PATHS.Kinematics_q.(trialname)], DATA.OPTIONS.Leg_2_Analyze, DATA.OPTIONS.FP_used, DATA.OPTIONS.GENERIC.setupIDname, initial_time, final_time, trialname);
             end
             pause(0.000001)
@@ -210,13 +214,15 @@ for c = startcon: endcon
                 [~,~,DATA.SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.SO_activation.(trialname));
                 [~,~,DATA.SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_force.(trialname));
                 [~,~,DATA.SO_TABLE.PROBE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_probe.(trialname));
-
+            
             elseif DATA.OPTIONS.SO ==1 && DATA.OPTIONS.HAS_PROBE==0
                 [DATA.OPTIONS.PATHS.SO_activation.(trialname), DATA.OPTIONS.PATHS.SO_force.(trialname)] = SO_app(DATA.OPTIONS,pathtopfolder, [subjects(s).folder,'\',subjects(s).name], trialname, initial_time, final_time);
                 [~,~,DATA.SO_TABLE.Activation.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'],DATA.OPTIONS.PATHS.SO_activation.(trialname));
                 [~,~,DATA.SO_TABLE.FORCE.(trialname)]  = readMOTSTOTRCfiles([subjects(s).folder,'/',subjects(s).name, '/'] ,DATA.OPTIONS.PATHS.SO_force.(trialname));
             end
 
+            
+            
 
             ARRAY = DATA.ANGLES_TABLE.(trialname);
             for op = 1 : length(ARRAY.Properties.VariableNames)

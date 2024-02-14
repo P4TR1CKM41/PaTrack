@@ -12,12 +12,16 @@ analyeTool.setName(trialname);
 analyeTool.setResultsDir(tempfolder)
 analyeTool.setInitialTime(initial_time);
 analyeTool.setFinalTime(final_time);
-copyfile([pathtopfolder, '\',OPTIONS.GENERIC.rra_actuator],[tempfolder, '\', OPTIONS.GENERIC.rra_actuator]);
+copyfile([pathtopfolder, '\',OPTIONS.GENERIC.so_Actuators],[tempfolder, '\', OPTIONS.GENERIC.so_Actuators]);
 analyeTool.setExternalLoadsFileName([OPTIONS.PATHS.Exload.(trialname)]);
 analyeTool.setCoordinatesFileName([tempfolder, '\', OPTIONS.PATHS.Kinematics_q.(trialname)]);
 analyeTool.print([tempfolder,  '\','Setup_SO_' ,trialname, '.xml']);
 
-analyeTool.run();
+setup_path = [tempfolder,  '\','Setup_SO_' ,trialname, '.xml'];
+command = ['opensim-cmd run-tool "', setup_path, '"'];
+[status, cmdout] = system(command)
+
+% analyeTool.run();
 toc
 
 activations = [trialname, '_StaticOptimization_activation.sto'];

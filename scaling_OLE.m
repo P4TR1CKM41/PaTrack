@@ -39,6 +39,7 @@ scaleTool.getMarkerPlacer().setMaxMarkerMovement(-1.00000000); %
 scaleTool.print([pathtopfolder,'/','Setup_Scaling','.xml']);
 scaleTool.setPrintResultFiles(true)
 scaleTool.run();
+
 clearvars scaleTool
 % 
 % ModelVisualizer.addDirToGeometrySearchPaths(visualizer_path);

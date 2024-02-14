@@ -14,7 +14,7 @@ analyeTool.setName(trialname);
 analyeTool.setResultsDir(tempfolder)
 analyeTool.setInitialTime(initial_time);
 analyeTool.setFinalTime(final_time);
-copyfile([pathtopfolder, '\',OPTIONS.GENERIC.rra_actuator],[tempfolder, '\', OPTIONS.GENERIC.rra_actuator]);
+copyfile([pathtopfolder, '\',OPTIONS.GENERIC.so_Actuators],[tempfolder, '\', OPTIONS.GENERIC.so_Actuators]);
 analyeTool.setExternalLoadsFileName([OPTIONS.PATHS.Exload.(trialname)]);
 analyeTool.setCoordinatesFileName([tempfolder, '\', OPTIONS.PATHS.Kinematics_q.(trialname)]);
 %analyeTool.loadModel([pathtopfolder, '\', OPTIONS.GENERIC.probe_setup])
